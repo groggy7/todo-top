@@ -18,6 +18,16 @@ export default class Project {
         localStorage.setItem(this.uniqueKey, JSON.stringify(this));
     }
 
+    DeleteToDo(title) {
+        const index = this.todoList.findIndex(todo => todo.title === title);
+        if (index !== -1) {
+            const updatedTodoList = this.todoList.splice(index, 1);
+            localStorage.setItem(this.uniqueKey, JSON.stringify(this));
+            return updatedTodoList;
+        }
+        return null;
+    }
+
     GetTodoList() {
         return this.todoList;
     }

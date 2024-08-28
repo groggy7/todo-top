@@ -1,6 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
 
-class ToDo {
+export default class ToDo {
     constructor(title, description, dueDate, priority, projectID) {
         this.title = title;
         this.description = description;
@@ -56,5 +56,3 @@ function ValidateToDoItem(todo) {
            typeof todo.dueDate === 'string' &&
            typeof todo.priority === 'string';
 }
-
-export {ToDo};
