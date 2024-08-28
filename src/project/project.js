@@ -49,6 +49,8 @@ export default class Project {
                 }
             }
         }
+        
+        return projectList;
     }
 }
 

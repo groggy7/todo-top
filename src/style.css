@@ -1,0 +1,63 @@
+:root {
+    --background-color: #FCFAF8;
+    --secondary-color: #DC4C3E;
+    --hover-color: #F2EFED;
+    --active-color: #FFEFE5;
+    font-size: 16px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.sidebar {
+    background-color: var(--background-color);
+    width: 280px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 20px;
+}
+
+.sidebar-info {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    width: 100%;
+}
+
+.sidebar-icon {
+    margin-left: auto;
+}
+
+.today,  .this-week, .all-tasks{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    padding-left: 8px;
+}
+
+.projects {
+    font-size: 1.2rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.project-item {
+    padding-left: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
