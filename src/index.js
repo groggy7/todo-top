@@ -8,6 +8,7 @@ const main = document.querySelector(".main");
 
 const viewContent = document.createElement("div");
 viewContent.classList.add("view-content");
+main.appendChild(viewContent);
 
 const sidebarInfo = document.createElement("div");
 sidebarInfo.classList.add("sidebar-info");
@@ -19,6 +20,13 @@ sidebarInfo.innerHTML = `
 `;
 
 sidebar.appendChild(sidebarInfo);
+
+const addTask = document.createElement("div");
+addTask.classList.add("add-task", "sidebar-item");
+addTask.innerHTML = `
+    <i class="fa-solid fa-plus fa-lg"></i>
+    <span>Add Task</span>
+`;
 
 const today = document.createElement("div");
 today.classList.add("today", "sidebar-item");
@@ -48,6 +56,7 @@ projects.innerHTML = `
     <i class="fa-regular fa-plus fa-sm"></i>
 `;
 
+sidebar.appendChild(addTask);
 sidebar.appendChild(today);
 sidebar.appendChild(thisWeek);
 sidebar.appendChild(allTasks);
@@ -83,22 +92,28 @@ today.addEventListener("click", () => {
     
     const todayContainer = document.createElement("div");
     todayContainer.classList.add("today-container");
+    viewContent.appendChild(todayContainer);
+
+    const today = new Date();
+    const todoList = ToDo.GetToDoList();
+
+    const todaysTodos = todoList.filter(todo => {
+        const dueDate = new Date(todo.dueDate);
+        return dueDate.getDay() === today.getDay();
+        }
+    );
+
     todayContainer.innerHTML = `
         <div class="today-header">
             Today
         </div>
         <div class="today-task-count">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" aria-hidden="true" class="siIBvPn"><path fill="currentColor" fill-rule="evenodd" d="M8 14.001a6 6 0 1 1 0-12 6 6 0 0 1 0 12Zm0-1a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM5.146 8.147a.5.5 0 0 1 .708 0L7 9.294l3.146-3.147a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 0-.708Z" clip-rule="evenodd"></path></svg>
-            <span>${5} tasks</span>
+            <span>${todaysTodos.length} tasks</span>
         </div>
     `;
-    viewContent.appendChild(todayContainer);
-
-    const today = new Date();
-    const todoList = ToDo.GetToDoList();
-    todoList.forEach(todo => {
-        const dueDate = new Date(todo.dueDate);
-        if (dueDate.getDay() === today.getDay()) {
+    
+    todaysTodos.forEach(todo => {
             const todoItem = document.createElement("div");
             todoItem.classList.add("todo-item");
             todoItem.innerHTML = `
@@ -125,34 +140,145 @@ today.addEventListener("click", () => {
             </div>
             `;
             viewContent.appendChild(todoItem);
-        }
     });
     main.appendChild(viewContent);
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-    const checkbox = document.querySelector('.custom-checkbox input');
-    const checkmark = document.querySelector('.checkmark');
+thisWeek.addEventListener('click', function() {
+    main.innerHTML = "";
+    viewContent.innerHTML = "";
+    
+    const thisWeekContainer = document.createElement("div");
+    thisWeekContainer.classList.add("today-container");
+    viewContent.appendChild(thisWeekContainer);
 
-    checkbox.addEventListener('change', function() {
-        if (this.checked) {
-            checkmark.style.backgroundColor = '#2196F3';
-            checkmark.style.borderColor = '#2196F3';
-        } else {
-            checkmark.style.backgroundColor = '#fff';
-            checkmark.style.borderColor = '#ccc';
-        }
-    });
+    const today = new Date();
+    const todoList = ToDo.GetToDoList();
 
-    checkmark.addEventListener('mouseover', function() {
-        if (!checkbox.checked) {
-            this.style.backgroundColor = '#f0f0f0';
+    const thisWeeksTodos = todoList.filter(todo => {
+        const dueDate = new Date(todo.dueDate);
+        const endOfWeek = new Date(today);
+        endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
+        endOfWeek.setHours(23, 59, 59, 999);
+        return dueDate <= endOfWeek;
         }
-    });
+    );
 
-    checkmark.addEventListener('mouseout', function() {
-        if (!checkbox.checked) {
-            this.style.backgroundColor = '#fff';
-        }
+    thisWeekContainer.innerHTML = `
+        <div class="today-header">
+            This Week
+        </div>
+        <div class="today-task-count">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" aria-hidden="true" class="siIBvPn"><path fill="currentColor" fill-rule="evenodd" d="M8 14.001a6 6 0 1 1 0-12 6 6 0 0 1 0 12Zm0-1a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM5.146 8.147a.5.5 0 0 1 .708 0L7 9.294l3.146-3.147a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 0-.708Z" clip-rule="evenodd"></path></svg>
+            <span>${thisWeeksTodos.length} tasks</span>
+        </div>
+    `;
+
+    thisWeeksTodos.forEach(todo => {
+        const todoItem = document.createElement("div");
+        todoItem.classList.add("todo-item");
+        todoItem.innerHTML = `
+        <div class="todo-checkbox">
+            <label class="custom-checkbox">
+                <input type="checkbox">
+                <span class="checkmark"></span>
+            </label>
+        </div>
+        <div class="todo-content">
+            <div class="todo-title">
+                <span>${todo.title}</span>
+            </div>
+            <div class="todo-description">
+                <span>${todo.description}</span>
+            </div>
+            <div class="todo-due-hour">
+                <span>${todo.dueDate}</span>
+            <hr>
+            </div>
+        </div>
+        <div class="todo-actions">
+            <i class="fa-solid fa-trash-can"></i>
+        </div>
+        `;
+        viewContent.appendChild(todoItem);
     });
+    main.appendChild(viewContent);
 });
+
+allTasks.addEventListener('click', function() {
+    main.innerHTML = "";
+    viewContent.innerHTML = "";
+
+    const allTasksContainer = document.createElement("div");
+    allTasksContainer.classList.add("today-container");
+    viewContent.appendChild(allTasksContainer);
+    
+    const todoList = ToDo.GetToDoList();
+
+    allTasksContainer.innerHTML = `
+        <div class="today-header">
+            All Tasks
+        </div>
+        <div class="today-task-count">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" aria-hidden="true" class="siIBvPn"><path fill="currentColor" fill-rule="evenodd" d="M8 14.001a6 6 0 1 1 0-12 6 6 0 0 1 0 12Zm0-1a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM5.146 8.147a.5.5 0 0 1 .708 0L7 9.294l3.146-3.147a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 0-.708Z" clip-rule="evenodd"></path></svg>
+            <span>${todoList.length} tasks</span>
+        </div>
+    `;
+
+    todoList.forEach(todo => {
+        const todoItem = document.createElement("div");
+        todoItem.classList.add("todo-item");
+        todoItem.innerHTML = `
+        <div class="todo-checkbox">
+            <label class="custom-checkbox">
+                <input type="checkbox">
+                <span class="checkmark"></span>
+            </label>
+        </div>
+        <div class="todo-content">
+            <div class="todo-title
+                <span>${todo.title}</span>
+            </div>
+            <div class="todo-description">
+                <span>${todo.description}</span>
+            </div>
+            <div class="todo-due-hour">
+                <span>${todo.dueDate}</span>
+            <hr>
+            </div>
+        </div>
+        <div class="todo-actions">
+            <i class="fa-solid fa-trash-can"></i>
+        </div>
+        `;
+
+        viewContent.appendChild(todoItem);
+    });
+    main.appendChild(viewContent);
+});
+
+const checkbox = document.querySelector('.custom-checkbox input');
+const checkmark = document.querySelector('.checkmark');
+
+checkbox.addEventListener('change', function() {
+    if (this.checked) {
+        checkmark.style.backgroundColor = '#2196F3';
+        checkmark.style.borderColor = '#2196F3';
+    } else {
+        checkmark.style.backgroundColor = '#fff';
+        checkmark.style.borderColor = '#ccc';
+    }
+});
+
+checkmark.addEventListener('mouseover', function() {
+    if (!checkbox.checked) {
+        this.style.backgroundColor = '#f0f0f0';
+    }
+});
+
+checkmark.addEventListener('mouseout', function() {
+    if (!checkbox.checked) {
+        this.style.backgroundColor = '#fff';
+    }
+});
+

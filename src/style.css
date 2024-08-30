@@ -7,6 +7,7 @@
     --active-bg-color: #FFEFE5;
     --border-color: #DDDDDD;
     --selected-color: #06de43;
+    --text-color: #666666;
     font-size: 16px;
     font-family: 'Inter', Arial, sans-serif;
 }
@@ -30,9 +31,13 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
+    gap: 8px;
     padding: 8px 20px 20px 20px;
     flex: 0 0 320px;
+    font-size: 0.9rem;
+    position: sticky;
+    top: 0; 
+    overflow-y: auto;
 }
 
 .sidebar div {
@@ -40,7 +45,7 @@ body {
     padding: 8px;
 }
 
-.sidebar div:hover {
+.sidebar div[class*="sidebar-item"]:hover {
     cursor: pointer;
     background-color: var(--hover-color);
 }
@@ -65,17 +70,14 @@ body {
     margin-left: auto;
 }
 
-.today,  .this-week, .all-tasks{
+.sidebar-item {
     display: flex;
     align-items: center;
     gap: 16px;
     width: 100%;
-    padding-left: 8px;
 }
 
 .projects {
-    font-size: 1.2rem;
-    font-weight: bold;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -156,7 +158,7 @@ hr {
 .todo-due-hour {
     font-size: 0.8rem;
     color: var(--secondary-color);
-    transition: transform 1s ease; 
+    transition: transform 0.5s ease; 
 }
 
 .todo-actions i {
