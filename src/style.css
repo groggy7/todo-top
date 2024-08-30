@@ -1,9 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
 :root {
     --background-color: #FCFAF8;
     --secondary-color: #DC4C3E;
     --hover-color: #F2EFED;
-    --active-color: #FFEFE5;
+    --active-bg-color: #FFEFE5;
+    --border-color: #DDDDDD;
+    --selected-color: #06de43;
     font-size: 16px;
+    font-family: 'Inter', Arial, sans-serif;
 }
 
 * {
@@ -15,15 +20,38 @@ body {
     padding: 0;
 }
 
+.container {
+    display: flex;
+}
+
 .sidebar {
     background-color: var(--background-color);
-    width: 280px;
     height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 24px;
-    padding: 20px;
+    gap: 16px;
+    padding: 8px 20px 20px 20px;
+    flex: 0 0 320px;
+}
+
+.sidebar div {
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.sidebar div:hover {
+    cursor: pointer;
+    background-color: var(--hover-color);
+}
+
+.active {
+    background-color: var(--active-bg-color);
+    color: var(--secondary-color);
+}
+
+.sidebar div.active:hover {
+    background-color: var(--active-bg-color);
 }
 
 .sidebar-info {
@@ -60,4 +88,139 @@ body {
     align-items: center;
     gap: 12px;
     width: 100%;
+}
+
+.main {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding-top: 32px;
+}
+
+.view-content {
+    display: flex;
+    flex-direction: column;
+    flex-basis: 800px;
+}
+
+.today-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 16px;
+}
+
+.today-header {
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.today-task-count {
+    color: rgb(32, 32, 32);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.todo-item {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    padding: 16px;
+}
+
+.todo-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    width: 100%;
+}
+
+.todo-title {
+    font-size: 0.9rem;
+    font-weight: 400;
+}
+
+.todo-description {
+    font-size: 0.8rem;
+}
+
+.todo-due-hour {
+    font-size: 0.8rem;
+    color: var(--secondary-color);
+    transition: transform 1s ease; 
+}
+
+.todo-actions i {
+    color: var(--secondary-color);
+}
+
+.todo-actions i:hover {
+    transform: scale(1.1);
+}
+
+.custom-checkbox {
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+    font-size: 16px;
+    user-select: none;
+}
+
+.custom-checkbox input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: relative;
+    display: inline-block;
+    height: 20px;
+    width: 20px;
+    background-color: #fff;
+    border: 2px solid #ccc;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.custom-checkbox:hover input ~ .checkmark {
+    border-color: #2196F3;
+}
+
+.custom-checkbox input:checked ~ .checkmark {
+    border-color: #2196F3;
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 50%;
+    top: 50%;
+    width: 4px;
+    height: 8px;
+    border: solid #2196F3;
+    border-width: 0 2px 2px 0;
+    transform: translate(-50%, -60%) rotate(45deg);
+    transition: all 0.2s ease;
+}
+
+.custom-checkbox input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.custom-checkbox:hover .checkmark:after {
+    display: block;
+    border-color: #ccc;
 }

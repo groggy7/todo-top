@@ -3,9 +3,11 @@ import Project from "./project/project.js";
 import "./style.css";
 import '@fortawesome/fontawesome-free/css/all.css';
 
-const body = document.querySelector("body");
 const sidebar = document.querySelector(".sidebar");
 const main = document.querySelector(".main");
+
+const viewContent = document.createElement("div");
+viewContent.classList.add("view-content");
 
 const sidebarInfo = document.createElement("div");
 sidebarInfo.classList.add("sidebar-info");
@@ -19,21 +21,21 @@ sidebarInfo.innerHTML = `
 sidebar.appendChild(sidebarInfo);
 
 const today = document.createElement("div");
-today.classList.add("today");
+today.classList.add("today", "sidebar-item");
 today.innerHTML = `
     <i class="fa-solid fa-calendar-week fa-lg"></i>
     <span>Today</span>
 `;
 
 const thisWeek = document.createElement("div");
-thisWeek.classList.add("this-week");
+thisWeek.classList.add("this-week", "sidebar-item");
 thisWeek.innerHTML = `
    <i class="fa-solid fa-calendar-days fa-lg"></i>
     <span>This Week</span>
 `;
 
 const allTasks = document.createElement("div");
-allTasks.classList.add("all-tasks");
+allTasks.classList.add("all-tasks", "sidebar-item");
 allTasks.innerHTML = `
     <i class="fa-solid fa-list-check fa-lg"></i>
     <span>All Tasks</span>
@@ -55,7 +57,7 @@ let projectList = Project.GetProjectList();
 console.log(projectList);
 projectList.forEach(project => {
     const projectItem = document.createElement("div");
-    projectItem.classList.add("project-item");
+    projectItem.classList.add("project-item", "sidebar-item");
     projectItem.innerHTML = `
         <i class="fa-solid fa-folder fa-lg"></i>
         <span>${project.name}</span>
@@ -63,4 +65,94 @@ projectList.forEach(project => {
     sidebar.appendChild(projectItem);
 });
 
-body.appendChild(sidebar);
+const sidebarItems = document.querySelectorAll(".sidebar-item");
+
+sidebarItems.forEach(item => {
+    item.addEventListener("click", () => {
+        sidebarItems.forEach(item => {
+            item.classList.remove("active");
+        });
+        item.classList.add("active");
+    });
+});
+
+
+today.addEventListener("click", () => {
+    main.innerHTML = "";
+    viewContent.innerHTML = "";
+    
+    const todayContainer = document.createElement("div");
+    todayContainer.classList.add("today-container");
+    todayContainer.innerHTML = `
+        <div class="today-header">
+            Today
+        </div>
+        <div class="today-task-count">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" aria-hidden="true" class="siIBvPn"><path fill="currentColor" fill-rule="evenodd" d="M8 14.001a6 6 0 1 1 0-12 6 6 0 0 1 0 12Zm0-1a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM5.146 8.147a.5.5 0 0 1 .708 0L7 9.294l3.146-3.147a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 0-.708Z" clip-rule="evenodd"></path></svg>
+            <span>${5} tasks</span>
+        </div>
+    `;
+    viewContent.appendChild(todayContainer);
+
+    const today = new Date();
+    const todoList = ToDo.GetToDoList();
+    todoList.forEach(todo => {
+        const dueDate = new Date(todo.dueDate);
+        if (dueDate.getDay() === today.getDay()) {
+            const todoItem = document.createElement("div");
+            todoItem.classList.add("todo-item");
+            todoItem.innerHTML = `
+            <div class="todo-checkbox">
+                <label class="custom-checkbox">
+                    <input type="checkbox">
+                    <span class="checkmark"></span>
+                </label>
+            </div>
+            <div class="todo-content">
+                <div class="todo-title">
+                    <span>${todo.title}</span>
+                </div>
+                <div class="todo-description">
+                    <span>${todo.description}</span>
+                </div>
+                <div class="todo-due-hour">
+                    <span>${todo.dueDate}</span>
+                <hr>
+                </div>
+            </div>
+            <div class="todo-actions">
+                <i class="fa-solid fa-trash-can"></i>
+            </div>
+            `;
+            viewContent.appendChild(todoItem);
+        }
+    });
+    main.appendChild(viewContent);
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const checkbox = document.querySelector('.custom-checkbox input');
+    const checkmark = document.querySelector('.checkmark');
+
+    checkbox.addEventListener('change', function() {
+        if (this.checked) {
+            checkmark.style.backgroundColor = '#2196F3';
+            checkmark.style.borderColor = '#2196F3';
+        } else {
+            checkmark.style.backgroundColor = '#fff';
+            checkmark.style.borderColor = '#ccc';
+        }
+    });
+
+    checkmark.addEventListener('mouseover', function() {
+        if (!checkbox.checked) {
+            this.style.backgroundColor = '#f0f0f0';
+        }
+    });
+
+    checkmark.addEventListener('mouseout', function() {
+        if (!checkbox.checked) {
+            this.style.backgroundColor = '#fff';
+        }
+    });
+});
