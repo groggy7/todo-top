@@ -12,8 +12,8 @@ export default class ToDo {
         console.log(this);
     }
 
-    Delete() {
-        localStorage.removeItem(this.uniqueKey);
+    static Delete(uniqueKey) {
+        localStorage.removeItem(uniqueKey);
     }
 
     Update(title, description, dueDate, priority) {

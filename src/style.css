@@ -105,7 +105,7 @@ body {
     flex-basis: 800px;
 }
 
-.today-container {
+.today-container, .this-week-container, .all-todos-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -130,7 +130,7 @@ body {
     display: flex;
     gap: 8px;
     width: 100%;
-    padding: 16px;
+    padding: 4px;
 }
 
 .todo-content {
@@ -225,4 +225,9 @@ hr {
 .custom-checkbox:hover .checkmark:after {
     display: block;
     border-color: #ccc;
+}
+
+.add-task {
+    font-weight: 600;
+    color: var(--secondary-color);
 }

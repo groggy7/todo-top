@@ -82,14 +82,26 @@ sidebarItems.forEach(item => {
             item.classList.remove("active");
         });
         item.classList.add("active");
+
+        if (item.classList.contains("today")) {
+            currentView = 'today';
+            loadTodayTodos();
+        } else if (item.classList.contains("this-week")) {
+            currentView = 'this-week';
+            loadThisWeekTodos();
+        } else {
+            currentView = 'all';
+            loadAllTodos();
+        }
     });
 });
 
+let currentView = 'today'; 
 
-today.addEventListener("click", () => {
+function loadTodayTodos() {
     main.innerHTML = "";
     viewContent.innerHTML = "";
-    
+
     const todayContainer = document.createElement("div");
     todayContainer.classList.add("today-container");
     viewContent.appendChild(todayContainer);
@@ -104,19 +116,19 @@ today.addEventListener("click", () => {
     );
 
     todayContainer.innerHTML = `
-        <div class="today-header">
-            Today
-        </div>
-        <div class="today-task-count">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" aria-hidden="true" class="siIBvPn"><path fill="currentColor" fill-rule="evenodd" d="M8 14.001a6 6 0 1 1 0-12 6 6 0 0 1 0 12Zm0-1a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM5.146 8.147a.5.5 0 0 1 .708 0L7 9.294l3.146-3.147a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 0-.708Z" clip-rule="evenodd"></path></svg>
-            <span>${todaysTodos.length} tasks</span>
-        </div>
+    <div class="today-header">
+        Today
+    </div>
+    <div class="today-task-count">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" aria-hidden="true" class="siIBvPn"><path fill="currentColor" fill-rule="evenodd" d="M8 14.001a6 6 0 1 1 0-12 6 6 0 0 1 0 12Zm0-1a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM5.146 8.147a.5.5 0 0 1 .708 0L7 9.294l3.146-3.147a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 0-.708Z" clip-rule="evenodd"></path></svg>
+        <span>${todaysTodos.length} tasks</span>
+    </div>
     `;
-    
+
     todaysTodos.forEach(todo => {
-            const todoItem = document.createElement("div");
-            todoItem.classList.add("todo-item");
-            todoItem.innerHTML = `
+        const todoItem = document.createElement("div");
+        todoItem.classList.add("todo-item");
+        todoItem.innerHTML = `
             <div class="todo-checkbox">
                 <label class="custom-checkbox">
                     <input type="checkbox">
@@ -132,90 +144,91 @@ today.addEventListener("click", () => {
                 </div>
                 <div class="todo-due-hour">
                     <span>${todo.dueDate}</span>
-                <hr>
+                    <hr>
                 </div>
             </div>
             <div class="todo-actions">
-                <i class="fa-solid fa-trash-can"></i>
+                <i class="fa-solid fa-trash-can" data-id="${todo.uniqueKey}"></i>
             </div>
-            `;
-            viewContent.appendChild(todoItem);
+        `;
+        todayContainer.appendChild(todoItem);
     });
     main.appendChild(viewContent);
-});
+}
 
-thisWeek.addEventListener('click', function() {
+function loadThisWeekTodos() {
     main.innerHTML = "";
     viewContent.innerHTML = "";
-    
+
     const thisWeekContainer = document.createElement("div");
-    thisWeekContainer.classList.add("today-container");
+    thisWeekContainer.classList.add("this-week-container");
     viewContent.appendChild(thisWeekContainer);
 
     const today = new Date();
-    const todoList = ToDo.GetToDoList();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay());
+    const endOfWeek = new Date(today);
+    endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
+    endOfWeek.setHours(23, 59, 59, 999);
 
-    const thisWeeksTodos = todoList.filter(todo => {
+    const todoList = ToDo.GetToDoList();
+    const thisWeekTodos = todoList.filter(todo => {
         const dueDate = new Date(todo.dueDate);
-        const endOfWeek = new Date(today);
-        endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
-        endOfWeek.setHours(23, 59, 59, 999);
-        return dueDate <= endOfWeek;
-        }
-    );
+        return dueDate >= startOfWeek && dueDate <= endOfWeek;
+    });
 
     thisWeekContainer.innerHTML = `
-        <div class="today-header">
-            This Week
-        </div>
-        <div class="today-task-count">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" aria-hidden="true" class="siIBvPn"><path fill="currentColor" fill-rule="evenodd" d="M8 14.001a6 6 0 1 1 0-12 6 6 0 0 1 0 12Zm0-1a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM5.146 8.147a.5.5 0 0 1 .708 0L7 9.294l3.146-3.147a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 0-.708Z" clip-rule="evenodd"></path></svg>
-            <span>${thisWeeksTodos.length} tasks</span>
-        </div>
+    <div class="today-header">
+        This Week
+    </div>
+    <div class="today-task-count">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" aria-hidden="true" class="siIBvPn"><path fill="currentColor" fill-rule="evenodd" d="M8 14.001a6 6 0 1 1 0-12 6 6 0 0 1 0 12Zm0-1a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM5.146 8.147a.5.5 0 0 1 .708 0L7 9.294l3.146-3.147a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 0-.708Z" clip-rule="evenodd"></path></svg>
+        <span>${thisWeekTodos.length} tasks</span>
+    </div>
     `;
 
-    thisWeeksTodos.forEach(todo => {
+    thisWeekTodos.forEach(todo => {
         const todoItem = document.createElement("div");
         todoItem.classList.add("todo-item");
         todoItem.innerHTML = `
-        <div class="todo-checkbox">
-            <label class="custom-checkbox">
-                <input type="checkbox">
-                <span class="checkmark"></span>
-            </label>
-        </div>
-        <div class="todo-content">
-            <div class="todo-title">
-                <span>${todo.title}</span>
+            <div class="todo-checkbox">
+                <label class="custom-checkbox">
+                    <input type="checkbox">
+                    <span class="checkmark"></span>
+                </label>
             </div>
-            <div class="todo-description">
-                <span>${todo.description}</span>
+            <div class="todo-content">
+                <div class="todo-title">
+                    <span>${todo.title}</span>
+                </div>
+                <div class="todo-description">
+                    <span>${todo.description}</span>
+                </div>
+                <div class="todo-due-hour">
+                    <span>${todo.dueDate}</span>
+                    <hr>
+                </div>
             </div>
-            <div class="todo-due-hour">
-                <span>${todo.dueDate}</span>
-            <hr>
+            <div class="todo-actions">
+                <i class="fa-solid fa-trash-can" data-id="${todo.uniqueKey}"></i>
             </div>
-        </div>
-        <div class="todo-actions">
-            <i class="fa-solid fa-trash-can"></i>
-        </div>
         `;
-        viewContent.appendChild(todoItem);
+        thisWeekContainer.appendChild(todoItem);
     });
     main.appendChild(viewContent);
-});
+}
 
-allTasks.addEventListener('click', function() {
+function loadAllTodos() {
     main.innerHTML = "";
     viewContent.innerHTML = "";
 
-    const allTasksContainer = document.createElement("div");
-    allTasksContainer.classList.add("today-container");
-    viewContent.appendChild(allTasksContainer);
-    
+    const allTodosContainer = document.createElement("div");
+    allTodosContainer.classList.add("all-todos-container");
+    viewContent.appendChild(allTodosContainer);
+
     const todoList = ToDo.GetToDoList();
 
-    allTasksContainer.innerHTML = `
+    allTodosContainer.innerHTML = `
         <div class="today-header">
             All Tasks
         </div>
@@ -229,56 +242,83 @@ allTasks.addEventListener('click', function() {
         const todoItem = document.createElement("div");
         todoItem.classList.add("todo-item");
         todoItem.innerHTML = `
-        <div class="todo-checkbox">
-            <label class="custom-checkbox">
-                <input type="checkbox">
-                <span class="checkmark"></span>
-            </label>
-        </div>
-        <div class="todo-content">
-            <div class="todo-title
-                <span>${todo.title}</span>
+            <div class="todo-checkbox">
+                <label class="custom-checkbox">
+                    <input type="checkbox">
+                    <span class="checkmark"></span>
+                </label>
             </div>
-            <div class="todo-description">
-                <span>${todo.description}</span>
+            <div class="todo-content">
+                <div class="todo-title">
+                    <span>${todo.title}</span>
+                </div>
+                <div class="todo-description">
+                    <span>${todo.description}</span>
+                </div>
+                <div class="todo-due-hour">
+                    <span>${todo.dueDate}</span>
+                    <hr>
+                </div>
             </div>
-            <div class="todo-due-hour">
-                <span>${todo.dueDate}</span>
-            <hr>
+            <div class="todo-actions">
+                <i class="fa-solid fa-trash-can" data-id="${todo.uniqueKey}"></i>
             </div>
-        </div>
-        <div class="todo-actions">
-            <i class="fa-solid fa-trash-can"></i>
-        </div>
         `;
-
-        viewContent.appendChild(todoItem);
+        allTodosContainer.appendChild(todoItem);
     });
     main.appendChild(viewContent);
+}
+
+document.addEventListener('click', function(event) {
+    if (event.target.classList.contains('fa-trash-can')) {
+        const todoId = event.target.getAttribute('data-id');
+
+        ToDo.Delete(todoId);
+        refreshCurrentView();
+    }
 });
 
-const checkbox = document.querySelector('.custom-checkbox input');
-const checkmark = document.querySelector('.checkmark');
-
-checkbox.addEventListener('change', function() {
-    if (this.checked) {
-        checkmark.style.backgroundColor = '#2196F3';
-        checkmark.style.borderColor = '#2196F3';
+function refreshCurrentView() {
+    if (currentView === 'today') {
+        loadTodayTodos();
+        sidebarItems[1].classList.add('active');
+    } else if (currentView === 'this-week') {
+        loadThisWeekTodos();
+        sidebarItems[2].classList.add('active');
     } else {
-        checkmark.style.backgroundColor = '#fff';
-        checkmark.style.borderColor = '#ccc';
+        loadAllTodos();
+        sidebarItems[3].classList.add('active');
+    }
+}
+
+refreshCurrentView();
+
+document.addEventListener('DOMContentLoaded', function() {
+    const checkbox = document.querySelector('.custom-checkbox input');
+    const checkmark = document.querySelector('.checkmark');
+
+    if (checkbox && checkmark) {
+        checkmark.addEventListener('mouseover', function() {
+            if (!checkbox.checked) {
+                this.style.borderColor = '#2196F3';
+            }
+        });
+
+        checkmark.addEventListener('mouseout', function() {
+            if (!checkbox.checked) {
+                this.style.borderColor = '#ccc';
+            }
+        });
+
+        checkmark.addEventListener('click', function(event) {
+            event.preventDefault();
+            checkbox.checked = !checkbox.checked;
+            
+            if (checkbox.checked) {
+                this.style.borderColor = '#2196F3';
+            } else {
+                this.style.borderColor = '#ccc';
+            }
+        });
     }
 });
-
-checkmark.addEventListener('mouseover', function() {
-    if (!checkbox.checked) {
-        this.style.backgroundColor = '#f0f0f0';
-    }
-});
-
-checkmark.addEventListener('mouseout', function() {
-    if (!checkbox.checked) {
-        this.style.backgroundColor = '#fff';
-    }
-});
-
