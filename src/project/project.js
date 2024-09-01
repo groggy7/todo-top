@@ -6,11 +6,10 @@ export default class Project {
         this.todoList = [];
         this.uniqueKey = `project_${uuidv4()}`;
         localStorage.setItem(this.uniqueKey, JSON.stringify(this));
-        console.log(this);
     }
 
-    Delete() {
-        localStorage.removeItem(this.uniqueKey);
+    static Delete(uniqueKey) {
+        localStorage.removeItem(uniqueKey);
     }
 
     AddTodo(todo) {
@@ -21,7 +20,7 @@ export default class Project {
     DeleteToDo(title) {
         const index = this.todoList.findIndex(todo => todo.title === title);
         if (index !== -1) {
-            const updatedTodoList = this.todoList.splice(index, 1);
+            this.todoList = this.todoList.splice(index, 1);
             localStorage.setItem(this.uniqueKey, JSON.stringify(this));
             return updatedTodoList;
         }
