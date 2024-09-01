@@ -9,6 +9,9 @@
     --selected-color: #06de43;
     --text-color: #666666;
     --placeholder-color: #999999;
+    --cancel-button-bg-color: #E5E5E5;
+    --cancel-button-text-color: #444444;
+    --modal-bg-color: #FFFFFF;
     font-size: 16px;
     font-family: 'Inter', Arial, sans-serif;
 }
@@ -241,19 +244,23 @@ hr {
 .modal {
     display: none;
     position: fixed;
-    z-index: 1;
+    z-index: 1000;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
 }
 
 .modal-content {
+    background-color: var(--modal-bg-color);
     margin: 10% auto;
     padding: 20px;
     width: 30%;
     border-radius: 10px;
-    box-shadow: 0 15px 50px 0 rgba(0, 0 , 0,.35);
+    box-shadow: 0 15px 50px 0 rgba(0, 0, 0, 0.35);
+    position: relative;
+    z-index: 1001;
 }
 
 .add-task-form {
@@ -313,11 +320,17 @@ hr {
 
 .project-select {
     width: min-content;
-    padding: 4px 8px;
-    border: 1px solid var(--border-color);
+    padding: 8px;
     border-radius: 4px;
     font-size: 0.9rem;
     appearance: none;
+    border: none;
+    outline: none;
+}
+
+.project-selector-and-submit {
+    display: flex;
+    gap: 8px;
 }
 
 .custom-select {
@@ -331,7 +344,7 @@ hr {
     padding: 8px;
     height: 30px;
     border: 1px solid #e6e6e6;
-    border-radius: 4px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -383,4 +396,25 @@ hr {
 .flag.white {
     background-color: white;
     border: 1px solid #ccc;
+}
+
+.modal-cancel-button {
+    background-color: var(--cancel-button-bg-color);
+    color: var(--cancel-button-text-color);
+    border: none;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-left: auto;
+}
+
+.modal-submit-button {
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
 }

@@ -107,6 +107,12 @@ document.addEventListener('DOMContentLoaded', function() {
         event.preventDefault();
 
         const form = document.querySelector("#add-task-form");
+
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
         const formData = new FormData(form);
         const taskTitle = formData.get("task-title");
         const taskDescription = formData.get("task-description");
@@ -119,11 +125,17 @@ document.addEventListener('DOMContentLoaded', function() {
         refreshCurrentView();
         closeModal();
     });
+
+    const modal = document.querySelector('.modal');
+
+    modal.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
 });
 
-
-
-    document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function() {
     const now = new Date();
 
     flatpickr("#datetimePicker", {
@@ -453,18 +465,6 @@ function loadAllTodos() {
 
 addTask.addEventListener("click", openModal);
 
-/* modal.addEventListener("click", (e) => {
-    const dialogDimensions = modal.getBoundingClientRect();
-    if (
-        e.clientX < dialogDimensions.left ||
-        e.clientX > dialogDimensions.right ||
-        e.clientY < dialogDimensions.top ||
-        e.clientY > dialogDimensions.bottom
-    ) {
-        modal.close();
-    }
-}); */
-
 document.addEventListener('click', function(event) {
     if (event.target.classList.contains('fa-trash-can')) {
         const todoId = event.target.getAttribute('data-id');
@@ -475,15 +475,18 @@ document.addEventListener('click', function(event) {
 });
 
 function refreshCurrentView() {
-    if (currentView === 'today') {
-        loadTodayTodos();
+    if (currentView === 'inbox') {
+        loadInbox();
         sidebarItems[1].classList.add('active');
+    } else if (currentView === 'today') {
+        loadTodayTodos();
+        sidebarItems[2].classList.add('active');
     } else if (currentView === 'this-week') {
         loadThisWeekTodos();
-        sidebarItems[2].classList.add('active');
+        sidebarItems[3].classList.add('active');
     } else {
         loadAllTodos();
-        sidebarItems[3].classList.add('active');
+        sidebarItems[4].classList.add('active');
     }
 }
 
