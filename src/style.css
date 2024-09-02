@@ -155,7 +155,7 @@ hr {
     font-weight: 400;
 }
 
-.todo-description {
+.todo-description, .todo-priority {
     font-size: 0.8rem;
 }
 
@@ -385,21 +385,16 @@ hr {
     display: inline-block;
 }
 
-.flag.red {
+.flag.high {
     background-color: red;
 }
 
-.flag.orange {
+.flag.medium {
     background-color: orange;
 }
 
-.flag.blue {
+.flag.low {
     background-color: green;
-}
-
-.flag.white {
-    background-color: white;
-    border: 1px solid #ccc;
 }
 
 .modal-cancel-button {
@@ -421,4 +416,11 @@ hr {
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.9rem;
+}
+
+.completed .todo-title span,
+.completed .todo-description span,
+.completed .todo-due-hour span,
+.completed .todo-priority span {
+    text-decoration: line-through;
 }

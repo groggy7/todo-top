@@ -7,6 +7,7 @@ export default class ToDo {
         this.dueDate = dueDate;
         this.priority = priority;
         this.projectID = projectID;
+        this.done = false;
         this.uniqueKey = `todo_${uuidv4()}`;
         localStorage.setItem(this.uniqueKey, JSON.stringify(this));
         console.log(this);
@@ -16,16 +17,40 @@ export default class ToDo {
         localStorage.removeItem(uniqueKey);
     }
 
-    Update(title, description, dueDate, priority) {
-        this.title = title;
-        this.description = description;
-        this.dueDate = dueDate;
-        this.priority = priority;
-        localStorage.setItem(this.uniqueKey, JSON.stringify(this));   
+    static Update(title, description, dueDate, priority) {
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key === uniqueKey) {
+                const todoData = JSON.parse(localStorage.getItem(key));
+                todoData.title = title;
+                todoData.description = description;
+                todoData.dueDate = dueDate;
+                todoData.priority = priority;
+                localStorage.setItem(key, JSON.stringify(todoData));
+            }
+        }
     }
 
-    GetID() {
-        return this.uniqueKey;
+    static Complete(uniqueKey) {
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key === uniqueKey) {
+                const todoData = JSON.parse(localStorage.getItem(key));
+                todoData.done = true;
+                localStorage.setItem(key, JSON.stringify(todoData));
+            }
+        }
+    }
+
+    static Uncomplete(uniqueKey) {
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key === uniqueKey) {
+                const todoData = JSON.parse(localStorage.getItem(key));
+                todoData.done = false;
+                localStorage.setItem(key, JSON.stringify(todoData));
+            }
+        }
     }
 
     static GetToDoList() {

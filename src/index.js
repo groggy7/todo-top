@@ -59,11 +59,11 @@ modal.innerHTML = `
             <div class="todo-time-and-priority">
                 <input type="text" id="datetimePicker" class="task-due-date" name="task-due-date" placeholder="Select Date and Time" required>
                 <div class="custom-select">
-                    <div class="select-selected"><span class="flag orange"></span> Medium</div>
+                    <div class="select-selected"><span class="flag medium"></span> Medium</div>
                     <div class="select-items">
-                        <div class="select-item"><span class="flag red"></span> High</div>
-                        <div class="select-item selected"><span class="flag orange"></span> Medium</div>
-                        <div class="select-item"><span class="flag blue"></span> Low</div>
+                        <div class="select-item"><span class="flag high"></span> High</div>
+                        <div class="select-item selected"><span class="flag medium"></span> Medium</div>
+                        <div class="select-item"><span class="flag low"></span> Low</div>
                     </div>
                 </div>
             </div>
@@ -120,11 +120,19 @@ function refreshCurrentView() {
 }
 
 function loadTodos(container, todos) {
+    const incompleteCount = todos.filter(todo => !todo.done).length;
+
+    function updateTaskCount() {
+        const incompleteCount = todos.filter(todo => !todo.done).length;
+        const taskCountElement = container.querySelector('.today-task-count span');
+        taskCountElement.textContent = `${incompleteCount} tasks`;
+    }
+
     container.innerHTML = `
         <div class="today-header">${currentView.charAt(0).toUpperCase() + currentView.slice(1)}</div>
         <div class="today-task-count">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" aria-hidden="true" class="siIBvPn"><path fill="currentColor" fill-rule="evenodd" d="M8 14.001a6 6 0 1 1 0-12 6 6 0 0 1 0 12Zm0-1a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM5.146 8.147a.5.5 0 0 1 .708 0L7 9.294l3.146-3.147a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 0-.708Z" clip-rule="evenodd"></path></svg>
-            <span>${todos.length} tasks</span>
+            <span>${incompleteCount} tasks</span>
         </div>
     `;
 
@@ -134,21 +142,42 @@ function loadTodos(container, todos) {
         todoItem.innerHTML = `
             <div class="todo-checkbox">
                 <label class="custom-checkbox">
-                    <input type="checkbox">
+                    <input type="checkbox" ${todo.done ? 'checked' : ''}>
                     <span class="checkmark"></span>
                 </label>
             </div>
             <div class="todo-content">
                 <div class="todo-title"><span>${todo.title}</span></div>
                 <div class="todo-description"><span>${todo.description}</span></div>
+                <div class="todo-priority"><span class="flag ${todo.priority.toLowerCase()}"></span><span>${todo.priority}</span></div>
                 <div class="todo-due-hour"><span>${todo.dueDate}</span><hr></div>
             </div>
             <div class="todo-actions">
                 <i class="fa-solid fa-trash-can" data-id="${todo.uniqueKey}"></i>
             </div>
         `;
+
+        if (todo.done) {
+            todoItem.classList.add('completed');
+        }
+
+        const checkbox = todoItem.querySelector('input[type="checkbox"]');
+        checkbox.addEventListener('change', function() {
+            todo.done = checkbox.checked;
+            if (checkbox.checked) {
+                todoItem.classList.add('completed');
+                ToDo.Complete(todo.uniqueKey);
+            } else {
+                todoItem.classList.remove('completed');
+                ToDo.Uncomplete(todo.uniqueKey);
+            }
+            updateTaskCount();
+        });
+
         container.appendChild(todoItem);
     });
+
+    updateTaskCount();
 }
 
 function loadInbox() {
