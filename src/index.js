@@ -7,7 +7,6 @@ import "flatpickr/dist/flatpickr.min.css";
 
 const sidebar = document.querySelector(".sidebar");
 const main = document.querySelector(".main");
-
 const viewContent = document.createElement("div");
 viewContent.classList.add("view-content");
 main.appendChild(viewContent);
@@ -23,45 +22,89 @@ sidebarInfo.innerHTML = `
 
 sidebar.appendChild(sidebarInfo);
 
+const sidebarItems = [
+    { class: 'add-task', icon: 'fa-plus', text: 'Add Task' },
+    { class: 'inbox', icon: 'fa-inbox', text: 'Inbox' },
+    { class: 'today', icon: 'fa-calendar-week', text: 'Today' },
+    { class: 'this-week', icon: 'fa-calendar-days', text: 'This Week' },
+    { class: 'all-tasks', icon: 'fa-list-check', text: 'All Tasks' }
+];
+
+const createSidebarItem = ({ class: itemClass, icon, text }) => {
+    const item = document.createElement("div");
+    item.classList.add(itemClass, "sidebar-item");
+    item.innerHTML = `<i class="fa-solid ${icon} fa-lg"></i><span>${text}</span>`;
+    return item;
+};
+
+sidebarItems.forEach(item => sidebar.appendChild(createSidebarItem(item)));
+
+const projects = document.createElement("div");
+projects.classList.add("projects");
+projects.innerHTML = '<span>My Projects</span><i class="fa-regular fa-plus fa-sm"></i>';
+sidebar.appendChild(projects);
+
+Project.GetProjectList().forEach(project => {
+    const projectItem = createSidebarItem({ class: 'project-item', icon: 'fa-folder', text: project.name });
+    sidebar.appendChild(projectItem);
+});
+
 const modal = document.createElement("div");
 modal.classList.add("modal");
 modal.innerHTML = `
     <div class="modal-content">
         <form id="add-task-form">
-            <div>
-                <input type="text" id="task-title" name="task-title" placeholder="Task name" required>
-            </div>
-            <div>
-                <input id="task-description" name="task-description" placeholder="description" required></input>
-            </div>
+            <input type="text" id="task-title" name="task-title" placeholder="Task name" required>
+            <input type="text" id="task-description" name="task-description" placeholder="Description" required>
             <div class="todo-time-and-priority">
                 <input type="text" id="datetimePicker" class="task-due-date" name="task-due-date" placeholder="Select Date and Time" required>
                 <div class="custom-select">
-                    <div class="select-selected">
-                        <span class="flag orange"></span> Medium
-                    </div>
+                    <div class="select-selected"><span class="flag orange"></span> Medium</div>
                     <div class="select-items">
-                        <div class="select-item">
-                            <span class="flag red"></span> High
-                        </div>
-                        <div class="select-item selected">
-                            <span class="flag orange"></span> Medium
-                        </div>
-                        <div class="select-item">
-                            <span class="flag blue"></span> Low
-                        </div>
+                        <div class="select-item"><span class="flag red"></span> High</div>
+                        <div class="select-item selected"><span class="flag orange"></span> Medium</div>
+                        <div class="select-item"><span class="flag blue"></span> Low</div>
                     </div>
                 </div>
             </div>
             <hr>
-            <div class="project-selector-and-submit">
-
-            </div>
+            <div class="project-selector-and-submit"></div>
         </form>
     </div>
 `;
 
-let projectList = Project.GetProjectList();
+document.body.appendChild(modal);
+
+let currentView = 'today';
+
+const viewHandlers = {
+    'inbox': loadInbox,
+    'today': loadTodayTodos,
+    'this-week': loadThisWeekTodos,
+    'all-tasks': loadAllTodos
+};
+
+sidebar.addEventListener('click', (e) => {
+    const item = e.target.closest('.sidebar-item');
+    if (item && !item.classList.contains('add-task')) {
+        document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        const view = Object.keys(viewHandlers).find(key => item.classList.contains(key));
+        if (view) {
+            currentView = view;
+            viewHandlers[view]();
+        }
+    }
+});
+
+document.querySelector('.add-task').addEventListener('click', openModal);
+
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('fa-trash-can')) {
+        ToDo.Delete(e.target.getAttribute('data-id'));
+        refreshCurrentView();
+    }
+});
 
 function openModal() {
     modal.style.display = "block";
@@ -71,24 +114,127 @@ function closeModal() {
     modal.style.display = "none";
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    const projectSelectorContainer = document.querySelector('.project-selector-and-submit');
+function refreshCurrentView() {
+    viewHandlers[currentView]();
+    document.querySelector(`.${currentView}`).classList.add('active');
+}
 
-    const projectSelect = document.createElement("select");
-    projectSelect.classList.add("project-select");
+function loadTodos(container, todos) {
+    container.innerHTML = `
+        <div class="today-header">${currentView.charAt(0).toUpperCase() + currentView.slice(1)}</div>
+        <div class="today-task-count">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" aria-hidden="true" class="siIBvPn"><path fill="currentColor" fill-rule="evenodd" d="M8 14.001a6 6 0 1 1 0-12 6 6 0 0 1 0 12Zm0-1a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM5.146 8.147a.5.5 0 0 1 .708 0L7 9.294l3.146-3.147a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 0-.708Z" clip-rule="evenodd"></path></svg>
+            <span>${todos.length} tasks</span>
+        </div>
+    `;
 
-    const option = document.createElement("option");
-    option.value = "none";
-    option.textContent = "Select Project";
-    projectSelect.appendChild(option);
+    todos.forEach(todo => {
+        const todoItem = document.createElement("div");
+        todoItem.classList.add("todo-item");
+        todoItem.innerHTML = `
+            <div class="todo-checkbox">
+                <label class="custom-checkbox">
+                    <input type="checkbox">
+                    <span class="checkmark"></span>
+                </label>
+            </div>
+            <div class="todo-content">
+                <div class="todo-title"><span>${todo.title}</span></div>
+                <div class="todo-description"><span>${todo.description}</span></div>
+                <div class="todo-due-hour"><span>${todo.dueDate}</span><hr></div>
+            </div>
+            <div class="todo-actions">
+                <i class="fa-solid fa-trash-can" data-id="${todo.uniqueKey}"></i>
+            </div>
+        `;
+        container.appendChild(todoItem);
+    });
+}
 
-    projectList.forEach(project => {
-        const option = document.createElement("option");
-        option.value = project.name;
-        option.textContent = project.name;
-        projectSelect.appendChild(option);
+function loadInbox() {
+    const inboxContainer = document.createElement("div");
+    inboxContainer.classList.add("inbox-container");
+    const inboxTodos = ToDo.GetToDoList().filter(todo => todo.projectID.trim() === 'none');
+    loadTodos(inboxContainer, inboxTodos);
+    viewContent.innerHTML = "";
+    viewContent.appendChild(inboxContainer);
+}
+
+function loadTodayTodos() {
+    const todayContainer = document.createElement("div");
+    todayContainer.classList.add("today-container");
+    const today = new Date();
+    const todaysTodos = ToDo.GetToDoList().filter(todo => {
+        const dueDate = new Date(todo.dueDate);
+        return dueDate.getDay() === today.getDay();
+    });
+    loadTodos(todayContainer, todaysTodos);
+    viewContent.innerHTML = "";
+    viewContent.appendChild(todayContainer);
+}
+
+function loadThisWeekTodos() {
+    const thisWeekContainer = document.createElement("div");
+    thisWeekContainer.classList.add("this-week-container");
+    const today = new Date();
+    const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+    const endOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 6));
+    const thisWeekTodos = ToDo.GetToDoList().filter(todo => {
+        const dueDate = new Date(todo.dueDate);
+        return dueDate >= startOfWeek && dueDate <= endOfWeek;
+    });
+    loadTodos(thisWeekContainer, thisWeekTodos);
+    viewContent.innerHTML = "";
+    viewContent.appendChild(thisWeekContainer);
+}
+
+function loadAllTodos() {
+    const allTodosContainer = document.createElement("div");
+    allTodosContainer.classList.add("all-todos-container");
+    loadTodos(allTodosContainer, ToDo.GetToDoList());
+    viewContent.innerHTML = "";
+    viewContent.appendChild(allTodosContainer);
+}
+
+refreshCurrentView();
+
+document.addEventListener('DOMContentLoaded', () => {
+    flatpickr("#datetimePicker", {
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        defaultDate: new Date(),
+        time_24hr: true,
     });
 
+    const select = document.querySelector('.custom-select');
+    const selected = select.querySelector('.select-selected');
+    const items = select.querySelectorAll('.select-item');
+
+    selected.addEventListener('click', () => {
+        const itemsContainer = select.querySelector('.select-items');
+        itemsContainer.style.display = itemsContainer.style.display === 'block' ? 'none' : 'block';
+    });
+
+    items.forEach(item => {
+        item.addEventListener('click', function() {
+            selected.innerHTML = this.innerHTML;
+            items.forEach(i => i.classList.remove('selected'));
+            this.classList.add('selected');
+            select.querySelector('.select-items').style.display = 'none';
+        });
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!select.contains(e.target)) {
+            select.querySelector('.select-items').style.display = 'none';
+        }
+    });
+
+    const projectSelectorContainer = document.querySelector('.project-selector-and-submit');
+    const projectSelect = document.createElement("select");
+    projectSelect.classList.add("project-select");
+    projectSelect.innerHTML = '<option value="none">Select Project</option>' +
+        Project.GetProjectList().map(project => `<option value="${project.name}">${project.name}</option>`).join('');
     projectSelectorContainer.appendChild(projectSelect);
 
     const cancelButton = document.createElement("button");
@@ -103,450 +249,28 @@ document.addEventListener('DOMContentLoaded', function() {
     projectSelectorContainer.appendChild(cancelButton);
     projectSelectorContainer.appendChild(submitButton);
 
-    submitButton.addEventListener("click", function(event) {
+    submitButton.addEventListener("click", (event) => {
         event.preventDefault();
-
         const form = document.querySelector("#add-task-form");
-
         if (!form.checkValidity()) {
             form.reportValidity();
             return;
         }
-
         const formData = new FormData(form);
-        const taskTitle = formData.get("task-title");
-        const taskDescription = formData.get("task-description");
-        const taskDueDate = formData.get("task-due-date");
-        const taskPriority = form.querySelector('.select-selected').textContent.trim();
-        const taskProject = projectSelect.options[projectSelect.selectedIndex].value;
-
-        new ToDo(taskTitle, taskDescription, taskDueDate, taskPriority, taskProject);
-
+        new ToDo(
+            formData.get("task-title"),
+            formData.get("task-description"),
+            formData.get("task-due-date"),
+            document.querySelector('.select-selected').textContent.trim(),
+            projectSelect.value
+        );
         refreshCurrentView();
         closeModal();
     });
 
-    const modal = document.querySelector('.modal');
-
-    modal.addEventListener('click', function(event) {
+    modal.addEventListener('click', (event) => {
         if (event.target === modal) {
             closeModal();
-        }
-    });
-});
-
-document.addEventListener("DOMContentLoaded", function() {
-    const now = new Date();
-
-    flatpickr("#datetimePicker", {
-        dateFormat: "Y-m-d",
-        minDate: "today",
-        defaultDate: now,
-        time_24hr: true,
-    });
-});
-  
-document.body.appendChild(modal);
-
-const addTask = document.createElement("div");
-addTask.classList.add("add-task", "sidebar-item");
-addTask.innerHTML = `
-    <i class="fa-solid fa-plus fa-lg"></i>
-    <span>Add Task</span>
-`;
-
-const inbox = document.createElement("div");
-inbox.classList.add("inbox", "sidebar-item");
-inbox.innerHTML = `
-    <i class="fa-solid fa-inbox fa-lg"></i>
-    <span>Inbox</span>
-`;
-
-const today = document.createElement("div");
-today.classList.add("today", "sidebar-item");
-today.innerHTML = `
-    <i class="fa-solid fa-calendar-week fa-lg"></i>
-    <span>Today</span>
-`;
-
-const thisWeek = document.createElement("div");
-thisWeek.classList.add("this-week", "sidebar-item");
-thisWeek.innerHTML = `
-   <i class="fa-solid fa-calendar-days fa-lg"></i>
-    <span>This Week</span>
-`;
-
-const allTasks = document.createElement("div");
-allTasks.classList.add("all-tasks", "sidebar-item");
-allTasks.innerHTML = `
-    <i class="fa-solid fa-list-check fa-lg"></i>
-    <span>All Tasks</span>
-`;
-
-const projects = document.createElement("div");
-projects.classList.add("projects");
-projects.innerHTML = `
-    <span>My Projects</span>
-    <i class="fa-regular fa-plus fa-sm"></i>
-`;
-
-sidebar.appendChild(addTask);
-sidebar.appendChild(inbox);
-sidebar.appendChild(today);
-sidebar.appendChild(thisWeek);
-sidebar.appendChild(allTasks);
-sidebar.appendChild(projects);
-
-projectList.forEach(project => {
-    const projectItem = document.createElement("div");
-    projectItem.classList.add("project-item", "sidebar-item");
-    projectItem.innerHTML = `
-        <i class="fa-solid fa-folder fa-lg"></i>
-        <span>${project.name}</span>
-`;
-    sidebar.appendChild(projectItem);
-});
-
-const sidebarItems = document.querySelectorAll(".sidebar-item");
-
-sidebarItems.forEach(item => {
-    item.addEventListener("click", () => {
-        if(!item.classList.contains("add-task")) {
-            sidebarItems.forEach(item => {
-                item.classList.remove("active");
-            });
-            item.classList.add("active");
-    
-            if (item.classList.contains("inbox")) {
-                currentView = 'inbox';
-                loadInbox();
-            } else  if (item.classList.contains("today")) {
-                currentView = 'today';
-                loadTodayTodos();
-            } else if (item.classList.contains("this-week")) {
-                currentView = 'this-week';
-                loadThisWeekTodos();
-            } else {
-                currentView = 'all';
-                loadAllTodos();
-            }
-        }
-    });
-});
-
-let currentView = 'today'; 
-
-function loadInbox() {
-    main.innerHTML = "";
-    viewContent.innerHTML = "";
-
-    const inboxContainer = document.createElement("div");
-    inboxContainer.classList.add("inbox-container");
-    viewContent.appendChild(inboxContainer);
-
-    const todoList = ToDo.GetToDoList();
-    const inboxTodos = todoList.filter(todo => todo.projectID.trim() === 'none');
-
-    inboxContainer.innerHTML = `
-        <div class="today-header">
-            Inbox
-        </div>
-        <div class="today-task-count">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" aria-hidden="true" class="siIBvPn"><path fill="currentColor" fill-rule="evenodd" d="M8 14.001a6 6 0 1 1 0-12 6 6 0 0 1 0 12Zm0-1a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM5.146 8.147a.5.5 0 0 1 .708 0L7 9.294l3.146-3.147a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 0-.708Z" clip-rule="evenodd"></path></svg>
-            <span>${inboxTodos.length} tasks</span>
-        </div>
-    `;
-
-    inboxTodos.forEach(todo => {
-        const todoItem = document.createElement("div");
-        todoItem.classList.add("todo-item");
-        todoItem.innerHTML = `
-            <div class="todo-checkbox">
-                <label class="custom-checkbox">
-                    <input type="checkbox">
-                    <span class="checkmark"></span>
-                </label>
-            </div>
-            <div class="todo-content">
-                <div class="todo-title
-                ">
-                    <span>${todo.title}</span>
-                </div>
-                <div class="todo-description">
-                    <span>${todo.description}</span>
-                </div>
-                <div class="todo-due-hour">
-                    <span>${todo.dueDate}</span>
-                    <hr>
-                </div>
-            </div>
-            <div class="todo-actions">
-                <i class="fa-solid fa-trash-can" data-id="${todo.uniqueKey}"></i>
-            </div>
-        `;
-        inboxContainer.appendChild(todoItem);
-    });
-    main.appendChild(viewContent);
-}
-
-function loadTodayTodos() {
-    main.innerHTML = "";
-    viewContent.innerHTML = "";
-
-    const todayContainer = document.createElement("div");
-    todayContainer.classList.add("today-container");
-    viewContent.appendChild(todayContainer);
-
-    const today = new Date();
-    const todoList = ToDo.GetToDoList();
-
-    const todaysTodos = todoList.filter(todo => {
-        const dueDate = new Date(todo.dueDate);
-        return dueDate.getDay() === today.getDay();
-        }
-    );
-
-    todayContainer.innerHTML = `
-    <div class="today-header">
-        Today
-    </div>
-    <div class="today-task-count">
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" aria-hidden="true" class="siIBvPn"><path fill="currentColor" fill-rule="evenodd" d="M8 14.001a6 6 0 1 1 0-12 6 6 0 0 1 0 12Zm0-1a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM5.146 8.147a.5.5 0 0 1 .708 0L7 9.294l3.146-3.147a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 0-.708Z" clip-rule="evenodd"></path></svg>
-        <span>${todaysTodos.length} tasks</span>
-    </div>
-    `;
-
-    todaysTodos.forEach(todo => {
-        const todoItem = document.createElement("div");
-        todoItem.classList.add("todo-item");
-        todoItem.innerHTML = `
-            <div class="todo-checkbox">
-                <label class="custom-checkbox">
-                    <input type="checkbox">
-                    <span class="checkmark"></span>
-                </label>
-            </div>
-            <div class="todo-content">
-                <div class="todo-title">
-                    <span>${todo.title}</span>
-                </div>
-                <div class="todo-description">
-                    <span>${todo.description}</span>
-                </div>
-                <div class="todo-due-hour">
-                    <span>${todo.dueDate}</span>
-                    <hr>
-                </div>
-            </div>
-            <div class="todo-actions">
-                <i class="fa-solid fa-trash-can" data-id="${todo.uniqueKey}"></i>
-            </div>
-        `;
-        todayContainer.appendChild(todoItem);
-    });
-    main.appendChild(viewContent);
-}
-
-function loadThisWeekTodos() {
-    main.innerHTML = "";
-    viewContent.innerHTML = "";
-
-    const thisWeekContainer = document.createElement("div");
-    thisWeekContainer.classList.add("this-week-container");
-    viewContent.appendChild(thisWeekContainer);
-
-    const today = new Date();
-
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay());
-    startOfWeek.setHours(0, 0, 0, 0);
-    
-    const endOfWeek = new Date(today);
-    endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
-    endOfWeek.setHours(23, 59, 59, 999);
-    
-    const todoList = ToDo.GetToDoList();
-    const thisWeekTodos = todoList.filter(todo => {
-        const dueDate = new Date(todo.dueDate);
-        return dueDate >= startOfWeek && dueDate <= endOfWeek;
-    });
-
-    thisWeekContainer.innerHTML = `
-    <div class="today-header">
-        This Week
-    </div>
-    <div class="today-task-count">
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" aria-hidden="true" class="siIBvPn"><path fill="currentColor" fill-rule="evenodd" d="M8 14.001a6 6 0 1 1 0-12 6 6 0 0 1 0 12Zm0-1a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM5.146 8.147a.5.5 0 0 1 .708 0L7 9.294l3.146-3.147a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 0-.708Z" clip-rule="evenodd"></path></svg>
-        <span>${thisWeekTodos.length} tasks</span>
-    </div>
-    `;
-
-    thisWeekTodos.forEach(todo => {
-        const todoItem = document.createElement("div");
-        todoItem.classList.add("todo-item");
-        todoItem.innerHTML = `
-            <div class="todo-checkbox">
-                <label class="custom-checkbox">
-                    <input type="checkbox">
-                    <span class="checkmark"></span>
-                </label>
-            </div>
-            <div class="todo-content">
-                <div class="todo-title">
-                    <span>${todo.title}</span>
-                </div>
-                <div class="todo-description">
-                    <span>${todo.description}</span>
-                </div>
-                <div class="todo-due-hour">
-                    <span>${todo.dueDate}</span>
-                    <hr>
-                </div>
-            </div>
-            <div class="todo-actions">
-                <i class="fa-solid fa-trash-can" data-id="${todo.uniqueKey}"></i>
-            </div>
-        `;
-        thisWeekContainer.appendChild(todoItem);
-    });
-    main.appendChild(viewContent);
-}
-
-function loadAllTodos() {
-    main.innerHTML = "";
-    viewContent.innerHTML = "";
-
-    const allTodosContainer = document.createElement("div");
-    allTodosContainer.classList.add("all-todos-container");
-    viewContent.appendChild(allTodosContainer);
-
-    const todoList = ToDo.GetToDoList();
-
-    allTodosContainer.innerHTML = `
-        <div class="today-header">
-            All Tasks
-        </div>
-        <div class="today-task-count">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" aria-hidden="true" class="siIBvPn"><path fill="currentColor" fill-rule="evenodd" d="M8 14.001a6 6 0 1 1 0-12 6 6 0 0 1 0 12Zm0-1a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM5.146 8.147a.5.5 0 0 1 .708 0L7 9.294l3.146-3.147a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 0-.708Z" clip-rule="evenodd"></path></svg>
-            <span>${todoList.length} tasks</span>
-        </div>
-    `;
-
-    todoList.forEach(todo => {
-        const todoItem = document.createElement("div");
-        todoItem.classList.add("todo-item");
-        todoItem.innerHTML = `
-            <div class="todo-checkbox">
-                <label class="custom-checkbox">
-                    <input type="checkbox">
-                    <span class="checkmark"></span>
-                </label>
-            </div>
-            <div class="todo-content">
-                <div class="todo-title">
-                    <span>${todo.title}</span>
-                </div>
-                <div class="todo-description">
-                    <span>${todo.description}</span>
-                </div>
-                <div class="todo-due-hour">
-                    <span>${todo.dueDate}</span>
-                    <hr>
-                </div>
-            </div>
-            <div class="todo-actions">
-                <i class="fa-solid fa-trash-can" data-id="${todo.uniqueKey}"></i>
-            </div>
-        `;
-        allTodosContainer.appendChild(todoItem);
-    });
-    main.appendChild(viewContent);
-}
-
-addTask.addEventListener("click", openModal);
-
-document.addEventListener('click', function(event) {
-    if (event.target.classList.contains('fa-trash-can')) {
-        const todoId = event.target.getAttribute('data-id');
-
-        ToDo.Delete(todoId);
-        refreshCurrentView();
-    }
-});
-
-function refreshCurrentView() {
-    if (currentView === 'inbox') {
-        loadInbox();
-        sidebarItems[1].classList.add('active');
-    } else if (currentView === 'today') {
-        loadTodayTodos();
-        sidebarItems[2].classList.add('active');
-    } else if (currentView === 'this-week') {
-        loadThisWeekTodos();
-        sidebarItems[3].classList.add('active');
-    } else {
-        loadAllTodos();
-        sidebarItems[4].classList.add('active');
-    }
-}
-
-refreshCurrentView();
-
-document.addEventListener('DOMContentLoaded', function() {
-    const checkbox = document.querySelector('.custom-checkbox input');
-    const checkmark = document.querySelector('.checkmark');
-
-    if (checkbox && checkmark) {
-        checkmark.addEventListener('mouseover', function() {
-            if (!checkbox.checked) {
-                this.style.borderColor = '#2196F3';
-            }
-        });
-
-        checkmark.addEventListener('mouseout', function() {
-            if (!checkbox.checked) {
-                this.style.borderColor = '#ccc';
-            }
-        });
-
-        checkmark.addEventListener('click', function(event) {
-            event.preventDefault();
-            checkbox.checked = !checkbox.checked;
-            
-            if (checkbox.checked) {
-                this.style.borderColor = '#2196F3';
-            } else {
-                this.style.borderColor = '#ccc';
-            }
-        });
-    }
-});
-
-
-document.addEventListener('DOMContentLoaded', function () {
-    const select = document.querySelector('.custom-select');
-    const selected = select.querySelector('.select-selected');
-    const items = select.querySelectorAll('.select-item');
-
-    selected.addEventListener('click', function () {
-        const itemsContainer = select.querySelector('.select-items');
-        itemsContainer.style.display = itemsContainer.style.display === 'block' ? 'none' : 'block';
-    });
-
-    items.forEach(item => {
-        item.addEventListener('click', function () {
-            selected.innerHTML = this.innerHTML;
-
-            items.forEach(item => item.classList.remove('selected'));
-            this.classList.add('selected');
-
-            select.querySelector('.select-items').style.display = 'none';
-        });
-    });
-
-    document.addEventListener('click', function (e) {
-        if (!select.contains(e.target)) {
-            select.querySelector('.select-items').style.display = 'none';
         }
     });
 });
