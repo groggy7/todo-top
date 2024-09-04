@@ -17,40 +17,31 @@ export default class ToDo {
         localStorage.removeItem(uniqueKey);
     }
 
-    static Update(title, description, dueDate, priority) {
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key === uniqueKey) {
-                const todoData = JSON.parse(localStorage.getItem(key));
-                todoData.title = title;
-                todoData.description = description;
-                todoData.dueDate = dueDate;
-                todoData.priority = priority;
-                localStorage.setItem(key, JSON.stringify(todoData));
-            }
+    static Update(uniqueKey, title, description, dueDate, priority) {
+        const todoData = JSON.parse(localStorage.getItem(uniqueKey));
+    
+        if (todoData) {
+            todoData.title = title;
+            todoData.description = description;
+            todoData.dueDate = dueDate;
+            todoData.priority = priority;
+            console.log("Updated todo item: ", todoData);
+            localStorage.setItem(uniqueKey, JSON.stringify(todoData));
+        } else {
+            console.error(`Todo item with key ${uniqueKey} not found.`);
         }
     }
 
     static Complete(uniqueKey) {
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key === uniqueKey) {
-                const todoData = JSON.parse(localStorage.getItem(key));
-                todoData.done = true;
-                localStorage.setItem(key, JSON.stringify(todoData));
-            }
-        }
+        const todoData = JSON.parse(localStorage.getItem(uniqueKey));
+        todoData.done = true;
+        localStorage.setItem(uniqueKey, JSON.stringify(todoData));
     }
 
     static Uncomplete(uniqueKey) {
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key === uniqueKey) {
-                const todoData = JSON.parse(localStorage.getItem(key));
-                todoData.done = false;
-                localStorage.setItem(key, JSON.stringify(todoData));
-            }
-        }
+        const todoData = JSON.parse(localStorage.getItem(uniqueKey));
+        todoData.done = false;
+        localStorage.setItem(uniqueKey, JSON.stringify(todoData));
     }
 
     static GetToDoList() {
