@@ -53,15 +53,15 @@ Project.GetProjectList().forEach(project => {
     sidebar.appendChild(projectItem);
 });
 
-const modal = document.createElement("div");
-modal.classList.add("add-task-modal");
-modal.innerHTML = `
+const addTaskModal = document.createElement("div");
+addTaskModal.classList.add("add-task-modal");
+addTaskModal.innerHTML = `
     <div class="modal-content">
         <form id="add-task-form">
-            <input type="text" id="task-title" name="task-title" placeholder="Task name" required>
-            <input type="text" id="task-description" name="task-description" placeholder="Description" required>
+            <input type="text" id="add-task-title" name="task-title" placeholder="Task name" required>
+            <input type="text" id="add-task-description" name="task-description" placeholder="Description" required>
             <div class="task-time-and-priority">
-                <input type="text" id="datetimePicker" class="task-due-date" name="task-due-date" placeholder="Select Date" required>
+                <input type="text" id="datetime-picker" class="time-picker" name="task-due-date" placeholder="Select Date" required>
                 <div class="custom-select">
                     <div class="select-selected"><span class="flag medium"></span> Medium</div>
                     <div class="select-items">
@@ -72,12 +72,51 @@ modal.innerHTML = `
                 </div>
             </div>
             <hr>
-            <div class="project-selector-and-submit"></div>
+            <div class="project-selector-and-submit">
+                <select class="project-select">
+                    <option value="none">Select Project</option>
+                    ${Project.GetProjectList().map(project => `<option value="${project.name}">${project.name}</option>`).join('')}
+                </select>
+                <button class="modal-cancel-button cancel-add-button" onclick="document.querySelector('.add-task-modal').style.display='none'">Cancel</button>
+                <button class="modal-submit-button add-button">Add Task</button>
+            </div>
         </form>
     </div>
 `;
 
-document.body.appendChild(modal);
+const updateTaskModal = document.createElement("div");
+updateTaskModal.classList.add("update-task-modal");
+updateTaskModal.innerHTML = `
+    <div class="modal-content">
+        <form id="update-task-form">
+            <input type="text" id="update-task-title" name="task-title" placeholder="Task name" required>
+            <input type="text" id="update-task-description" name="task-description" placeholder="Description" required>
+            <div class="task-time-and-priority">
+                <input type="text" id="update-datetime-picker" class="time-picker" name="task-due-date" placeholder="Select Date" required>
+                <div class="custom-select">
+                    <div class="select-selected"><span class="flag medium"></span> Medium</div>
+                    <div class="select-items">
+                        <div class="select-item"><span class="flag high"></span> High</div>
+                        <div class="select-item selected"><span class="flag medium"></span> Medium</div>
+                        <div class="select-item"><span class="flag low"></span> Low</div>
+                    </div>
+                </div>
+            </div>
+            <hr>
+           <div class="project-selector-and-submit">
+                <select class="project-select">
+                    <option value="none">Select Project</option>
+                    ${Project.GetProjectList().map(project => `<option value="${project.name}">${project.name}</option>`).join('')}
+                </select>
+                <button class="modal-cancel-button cancel-update-button" onclick="document.querySelector('.update-task-modal').style.display='none'">Cancel</button>
+                <button class="modal-submit-button update-button">Update Task</button>
+            </div>
+        </form>
+    </div>
+`;
+
+document.body.appendChild(addTaskModal);
+document.body.appendChild(updateTaskModal);
 
 let currentView = 'today';
 
@@ -101,7 +140,10 @@ sidebar.addEventListener('click', (e) => {
     }
 });
 
-document.querySelector('.add-task').addEventListener('click', openAddTaskModal);
+document.querySelector('.add-task').addEventListener('click', () => {
+    addTaskModal.style.display = "block";
+    document.querySelector("#add-task-form").reset();
+});
 
 document.addEventListener('click', (e) => {
     if (e.target.classList.contains('fa-trash-can')) {
@@ -109,15 +151,6 @@ document.addEventListener('click', (e) => {
         refreshCurrentView();
     }
 });
-
-function openAddTaskModal() {
-    modal.style.display = "block";
-    document.querySelector("#add-task-form").reset();
-}
-
-function closeAddTaskModal() {
-    modal.style.display = "none";
-}
 
 function refreshCurrentView() {
     viewHandlers[currentView]();
@@ -179,6 +212,35 @@ function loadTasks(container, tasks) {
             updateTaskCount();
         });
 
+        const taskContent = taskItem.querySelector('.task-content');
+        taskContent.addEventListener('click', function() {
+            const updateTaskModal = document.querySelector('.update-task-modal');
+            updateTaskModal.style.display = 'block';
+
+            const updateTaskForm = document.querySelector('#update-task-form');
+            updateTaskForm.reset();
+            updateTaskForm.querySelector('input[name="task-title"]').value = task.title;
+            updateTaskForm.querySelector('input[name="task-description"]').value = task.description;
+            updateTaskForm.querySelector('input[name="task-due-date"]').value = task.dueDate;
+            updateTaskForm.querySelector('.select-selected').innerHTML = `<span class="flag ${task.priority.toLowerCase()}"></span> ${task.priority}`;
+            const projectSelect = updateTaskForm.querySelector('.project-select');
+            projectSelect.value = task.projectID;
+
+            const updateTaskButton = document.querySelector('.update-button');
+            updateTaskButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                const formData = new FormData(updateTaskForm);
+                const title = formData.get("task-title");
+                const description = formData.get("task-description");
+                const dueDate = formData.get("task-due-date");
+                const priority = updateTaskForm.querySelector('.select-selected').textContent.trim();
+                const project = projectSelect.value;
+
+                Task.Update(task.uniqueKey, title, description, dueDate, priority, project);
+                refreshCurrentView();
+                updateTaskModal.style.display = 'none';
+            });
+        })
         container.appendChild(taskItem);
     });
 
@@ -233,64 +295,42 @@ function loadAllTasks() {
 refreshCurrentView();
 
 document.addEventListener('DOMContentLoaded', () => {
-    flatpickr("#datetimePicker", {
+    flatpickr(".time-picker", {
         dateFormat: "Y-m-d",
         minDate: "today",
         defaultDate: new Date(),
         time_24hr: true,
     });
 
-    const select = document.querySelector('.custom-select');
-    const selected = select.querySelector('.select-selected');
-    const items = select.querySelectorAll('.select-item');
+    const selects = document.querySelectorAll('.custom-select');
 
-    selected.addEventListener('click', () => {
-        const itemsContainer = select.querySelector('.select-items');
-        itemsContainer.style.display = itemsContainer.style.display === 'block' ? 'none' : 'block';
-    });
+    selects.forEach(select => {
+        const selected = select.querySelector('.select-selected');
+        const items = select.querySelectorAll('.select-item');
 
-    items.forEach(item => {
-        item.addEventListener('click', function() {
-            selected.innerHTML = this.innerHTML;
-            items.forEach(i => i.classList.remove('selected'));
-            this.classList.add('selected');
-            select.querySelector('.select-items').style.display = 'none';
+        selected.addEventListener('click', () => {
+            const itemsContainer = select.querySelector('.select-items');
+            itemsContainer.style.display = itemsContainer.style.display === 'block' ? 'none' : 'block';
+        });
+
+        items.forEach(item => {
+            item.addEventListener('click', function() {
+                selected.innerHTML = this.innerHTML;
+                items.forEach(i => i.classList.remove('selected'));
+                this.classList.add('selected');
+                select.querySelector('.select-items').style.display = 'none';
+            });
         });
     });
 
-    document.addEventListener('click', (e) => {
-        if (!select.contains(e.target)) {
-            select.querySelector('.select-items').style.display = 'none';
-        }
-    });
-
-    const projectSelectorContainer = document.querySelector('.project-selector-and-submit');
-    const projectSelect = document.createElement("select");
-    projectSelect.classList.add("project-select");
-    projectSelect.innerHTML = '<option value="none">Select Project</option>' +
-        Project.GetProjectList().map(project => `<option value="${project.name}">${project.name}</option>`).join('');
-    projectSelectorContainer.appendChild(projectSelect);
-
-    const cancelButton = document.createElement("button");
-    cancelButton.classList.add("modal-cancel-button");
-    cancelButton.textContent = "Cancel";
-    cancelButton.addEventListener("click", closeAddTaskModal);
-
-    const submitButton = document.createElement("button");
-    submitButton.classList.add("modal-submit-button");
-    submitButton.textContent = "Add Task";
-
-    projectSelectorContainer.appendChild(cancelButton);
-    projectSelectorContainer.appendChild(submitButton);
-
+    const submitButton = document.querySelector('.add-button');
     submitButton.addEventListener("click", (event) => {
         event.preventDefault();
         const form = document.querySelector("#add-task-form");
-        if (!form.checkValidity()) {
-            form.reportValidity();
-            return;
-        }
+        if (!form.checkValidity()) { form.reportValidity(); return; }
+
         const formData = new FormData(form);
+        const projectSelect = document.querySelector('.project-select');
         new Task(
             formData.get("task-title"),
             formData.get("task-description"),
@@ -299,12 +339,18 @@ document.addEventListener('DOMContentLoaded', () => {
             projectSelect.value
         );
         refreshCurrentView();
-        closeAddTaskModal();
+        addTaskModal.style.display = "none";
     });
 
-    modal.addEventListener('click', (event) => {
-        if (event.target === modal) {
-            closeAddTaskModal();
+    addTaskModal.addEventListener('click', (event) => {
+        if (event.target === addTaskModal) {
+            addTaskModal.style.display = "none";
+        }
+    });
+
+    updateTaskModal.addEventListener('click', (event) => {
+        if (event.target === updateTaskModal) {
+            updateTaskModal.style.display = "none";
         }
     });
 });

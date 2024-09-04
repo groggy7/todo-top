@@ -144,6 +144,10 @@ body {
     width: 100%;
 }
 
+.task-content:hover {
+    cursor: pointer;
+}
+
 hr {
     border: none;
     border-top: 1px solid var(--border-color);
@@ -241,7 +245,7 @@ hr {
     transform: scale(0.95);
 }
 
-.add-task-modal {
+.add-task-modal, .update-task-modal {
     display: none;
     position: fixed;
     z-index: 1000;
@@ -263,13 +267,9 @@ hr {
     z-index: 1001;
 }
 
-#add-task-form > input[type="text"] {
+#add-task-form > input[type="text"],
+#update-task-form > input[type="text"] {
     width: 100%;
-}
-
-.add-task-form {
-    display: flex;
-    flex-direction: column;
 }
 
 .close-button {
@@ -286,7 +286,8 @@ hr {
     cursor: pointer;
 }
 
-#task-title {
+#add-task-title,
+#update-task-title {
     border: none;
     outline: none;
     font-size: 1.2rem;
@@ -294,12 +295,16 @@ hr {
     border-radius: 4px;
 }
 
-#task-title::placeholder, #task-description::placeholder {
+#add-task-title::placeholder, 
+#add-task-description::placeholder
+#update-task-title::placeholder,
+#update-task-description::placeholder {
     color: var(--placeholder-color);
     opacity: 1;
 }
 
-#task-description {
+#add-task-description,
+#update-task-description {
     border: none;
     outline: none;
     font-size: 0.9rem;
@@ -307,7 +312,7 @@ hr {
     border-radius: 4px;
 }
 
-#datetimePicker {
+.time-picker {
     border: none;
     outline: none;
     font-size: 0.9rem;

@@ -10,14 +10,13 @@ export default class Task {
         this.done = false;
         this.uniqueKey = `task_${uuidv4()}`;
         localStorage.setItem(this.uniqueKey, JSON.stringify(this));
-        console.log(this);
     }
 
     static Delete(uniqueKey) {
         localStorage.removeItem(uniqueKey);
     }
 
-    static Update(uniqueKey, title, description, dueDate, priority) {
+    static Update(uniqueKey, title, description, dueDate, priority, projectID) {
         const taskData = JSON.parse(localStorage.getItem(uniqueKey));
     
         if (taskData) {
@@ -25,7 +24,7 @@ export default class Task {
             taskData.description = description;
             taskData.dueDate = dueDate;
             taskData.priority = priority;
-            console.log("Updated task item: ", taskData);
+            taskData.projectID = projectID;
             localStorage.setItem(uniqueKey, JSON.stringify(taskData));
         } else {
             console.error(`task item with key ${uniqueKey} not found.`);
