@@ -109,7 +109,7 @@ body {
     flex-basis: 800px;
 }
 
-.today-container, .this-week-container, .all-todos-container, .inbox-container {
+.today-container, .this-week-container, .all-tasks-container, .inbox-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -130,14 +130,14 @@ body {
     gap: 4px;
 }
 
-.todo-item {
+.task-item {
     display: flex;
     gap: 8px;
     width: 100%;
     padding: 4px;
 }
 
-.todo-content {
+.task-content {
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -150,26 +150,26 @@ hr {
     width: 100%;
 }
 
-.todo-title {
+.task-title {
     font-size: 0.9rem;
     font-weight: 400;
 }
 
-.todo-description, .todo-priority {
+.task-description, .task-priority {
     font-size: 0.8rem;
 }
 
-.todo-due-hour {
+.task-due-hour {
     font-size: 0.8rem;
     color: var(--secondary-color);
     transition: transform 0.5s ease; 
 }
 
-.todo-actions i {
+.task-actions i {
     color: var(--secondary-color);
 }
 
-.todo-actions i:hover {
+.task-actions i:hover {
     transform: scale(1.1);
 }
 
@@ -241,7 +241,7 @@ hr {
     transform: scale(0.95);
 }
 
-.modal {
+.add-task-modal {
     display: none;
     position: fixed;
     z-index: 1000;
@@ -312,12 +312,12 @@ hr {
     outline: none;
     font-size: 0.9rem;
     border-radius: 4px;
-    width: 150px;
+    width: 100px;
     height: 30px;
     padding-left: 8px;
 }
 
-.todo-time-and-priority {
+.task-time-and-priority {
     display: flex;
     gap: 8px;
 }
@@ -418,9 +418,9 @@ hr {
     font-size: 0.9rem;
 }
 
-.completed .todo-title span,
-.completed .todo-description span,
-.completed .todo-due-hour span,
-.completed .todo-priority span {
+.completed .task-title span,
+.completed .task-description span,
+.completed .task-due-hour span,
+.completed .task-priority span {
     text-decoration: line-through;
 }

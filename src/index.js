@@ -1,4 +1,4 @@
-import ToDo from "./todo/todo.js";
+import Task from "./task/task.js";
 import Project from "./project/project.js";
 import "./style.css";
 import '@fortawesome/fontawesome-free/css/all.css';
@@ -7,6 +7,7 @@ import "flatpickr/dist/flatpickr.min.css";
 import profileIcon from "./assets/profile.svg";
 import bellIcon from "./assets/bell.svg";
 import collapseIcon from "./assets/collapse.svg";
+import checkedIcon from "./assets/checked.svg";
 
 const sidebar = document.querySelector(".sidebar");
 const main = document.querySelector(".main");
@@ -53,14 +54,14 @@ Project.GetProjectList().forEach(project => {
 });
 
 const modal = document.createElement("div");
-modal.classList.add("modal");
+modal.classList.add("add-task-modal");
 modal.innerHTML = `
     <div class="modal-content">
         <form id="add-task-form">
             <input type="text" id="task-title" name="task-title" placeholder="Task name" required>
             <input type="text" id="task-description" name="task-description" placeholder="Description" required>
-            <div class="todo-time-and-priority">
-                <input type="text" id="datetimePicker" class="task-due-date" name="task-due-date" placeholder="Select Date and Time" required>
+            <div class="task-time-and-priority">
+                <input type="text" id="datetimePicker" class="task-due-date" name="task-due-date" placeholder="Select Date" required>
                 <div class="custom-select">
                     <div class="select-selected"><span class="flag medium"></span> Medium</div>
                     <div class="select-items">
@@ -82,9 +83,9 @@ let currentView = 'today';
 
 const viewHandlers = {
     'inbox': loadInbox,
-    'today': loadTodayTodos,
-    'this-week': loadThisWeekTodos,
-    'all-tasks': loadAllTodos
+    'today': loadTodayTasks,
+    'this-week': loadThisWeekTasks,
+    'all-tasks': loadAllTasks
 };
 
 sidebar.addEventListener('click', (e) => {
@@ -104,7 +105,7 @@ document.querySelector('.add-task').addEventListener('click', openAddTaskModal);
 
 document.addEventListener('click', (e) => {
     if (e.target.classList.contains('fa-trash-can')) {
-        ToDo.Delete(e.target.getAttribute('data-id'));
+        Task.Delete(e.target.getAttribute('data-id'));
         refreshCurrentView();
     }
 });
@@ -123,11 +124,11 @@ function refreshCurrentView() {
     document.querySelector(`.${currentView}`).classList.add('active');
 }
 
-function loadTodos(container, todos) {
-    const incompleteCount = todos.filter(todo => !todo.done).length;
+function loadTasks(container, tasks) {
+    const incompleteCount = tasks.filter(task => !task.done).length;
 
     function updateTaskCount() {
-        const incompleteCount = todos.filter(todo => !todo.done).length;
+        const incompleteCount = tasks.filter(task => !task.done).length;
         const taskCountElement = container.querySelector('.today-task-count span');
         taskCountElement.textContent = `${incompleteCount} tasks`;
     }
@@ -135,50 +136,50 @@ function loadTodos(container, todos) {
     container.innerHTML = `
         <div class="today-header">${currentView.charAt(0).toUpperCase() + currentView.slice(1)}</div>
         <div class="today-task-count">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" aria-hidden="true" class="siIBvPn"><path fill="currentColor" fill-rule="evenodd" d="M8 14.001a6 6 0 1 1 0-12 6 6 0 0 1 0 12Zm0-1a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM5.146 8.147a.5.5 0 0 1 .708 0L7 9.294l3.146-3.147a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 0-.708Z" clip-rule="evenodd"></path></svg>
+            <img src="${checkedIcon}" alt="Checked Icon">           
             <span>${incompleteCount} tasks</span>
         </div>
     `;
 
-    todos.forEach(todo => {
-        const todoItem = document.createElement("div");
-        todoItem.classList.add("todo-item");
-        todoItem.innerHTML = `
-            <div class="todo-checkbox">
+    tasks.forEach(task => {
+        const taskItem = document.createElement("div");
+        taskItem.classList.add("task-item");
+        taskItem.innerHTML = `
+            <div class="task-checkbox">
                 <label class="custom-checkbox">
-                    <input type="checkbox" ${todo.done ? 'checked' : ''}>
+                    <input type="checkbox" ${task.done ? 'checked' : ''}>
                     <span class="checkmark"></span>
                 </label>
             </div>
-            <div class="todo-content">
-                <div class="todo-title"><span>${todo.title}</span></div>
-                <div class="todo-description"><span>${todo.description}</span></div>
-                <div class="todo-priority"><span class="flag ${todo.priority.toLowerCase()}"></span><span>${todo.priority}</span></div>
-                <div class="todo-due-hour"><span>${todo.dueDate}</span><hr></div>
+            <div class="task-content">
+                <div class="task-title"><span>${task.title}</span></div>
+                <div class="task-description"><span>${task.description}</span></div>
+                <div class="task-priority"><span class="flag ${task.priority.toLowerCase()}"></span><span>${task.priority}</span></div>
+                <div class="task-due-hour"><span>${task.dueDate}</span><hr></div>
             </div>
-            <div class="todo-actions">
-                <i class="fa-solid fa-trash-can" data-id="${todo.uniqueKey}"></i>
+            <div class="task-actions">
+                <i class="fa-solid fa-trash-can" data-id="${task.uniqueKey}"></i>
             </div>
         `;
 
-        if (todo.done) {
-            todoItem.classList.add('completed');
+        if (task.done) {
+            taskItem.classList.add('completed');
         }
 
-        const checkbox = todoItem.querySelector('input[type="checkbox"]');
+        const checkbox = taskItem.querySelector('input[type="checkbox"]');
         checkbox.addEventListener('change', function() {
-            todo.done = checkbox.checked;
+            task.done = checkbox.checked;
             if (checkbox.checked) {
-                todoItem.classList.add('completed');
-                ToDo.Complete(todo.uniqueKey);
+                taskItem.classList.add('completed');
+                Task.Complete(task.uniqueKey);
             } else {
-                todoItem.classList.remove('completed');
-                ToDo.Uncomplete(todo.uniqueKey);
+                taskItem.classList.remove('completed');
+                Task.Uncomplete(task.uniqueKey);
             }
             updateTaskCount();
         });
 
-        container.appendChild(todoItem);
+        container.appendChild(taskItem);
     });
 
     updateTaskCount();
@@ -187,46 +188,46 @@ function loadTodos(container, todos) {
 function loadInbox() {
     const inboxContainer = document.createElement("div");
     inboxContainer.classList.add("inbox-container");
-    const inboxTodos = ToDo.GetToDoList().filter(todo => todo.projectID.trim() === 'none');
-    loadTodos(inboxContainer, inboxTodos);
+    const inboxTasks = Task.GetTaskList().filter(task => task.projectID.trim() === 'none');
+    loadTasks(inboxContainer, inboxTasks);
     viewContent.innerHTML = "";
     viewContent.appendChild(inboxContainer);
 }
 
-function loadTodayTodos() {
+function loadTodayTasks() {
     const todayContainer = document.createElement("div");
     todayContainer.classList.add("today-container");
     const today = new Date();
-    const todaysTodos = ToDo.GetToDoList().filter(todo => {
-        const dueDate = new Date(todo.dueDate);
+    const todaysTasks = Task.GetTaskList().filter(task => {
+        const dueDate = new Date(task.dueDate);
         return dueDate.getDay() === today.getDay();
     });
-    loadTodos(todayContainer, todaysTodos);
+    loadTasks(todayContainer, todaysTasks);
     viewContent.innerHTML = "";
     viewContent.appendChild(todayContainer);
 }
 
-function loadThisWeekTodos() {
+function loadThisWeekTasks() {
     const thisWeekContainer = document.createElement("div");
     thisWeekContainer.classList.add("this-week-container");
     const today = new Date();
     const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
     const endOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 6));
-    const thisWeekTodos = ToDo.GetToDoList().filter(todo => {
-        const dueDate = new Date(todo.dueDate);
+    const thisWeekTasks = Task.GetTaskList().filter(task => {
+        const dueDate = new Date(task.dueDate);
         return dueDate >= startOfWeek && dueDate <= endOfWeek;
     });
-    loadTodos(thisWeekContainer, thisWeekTodos);
+    loadTasks(thisWeekContainer, thisWeekTasks);
     viewContent.innerHTML = "";
     viewContent.appendChild(thisWeekContainer);
 }
 
-function loadAllTodos() {
-    const allTodosContainer = document.createElement("div");
-    allTodosContainer.classList.add("all-todos-container");
-    loadTodos(allTodosContainer, ToDo.GetToDoList());
+function loadAllTasks() {
+    const allTasksContainer = document.createElement("div");
+    allTasksContainer.classList.add("all-tasks-container");
+    loadTasks(allTasksContainer, Task.GetTaskList());
     viewContent.innerHTML = "";
-    viewContent.appendChild(allTodosContainer);
+    viewContent.appendChild(allTasksContainer);
 }
 
 refreshCurrentView();
@@ -290,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         const formData = new FormData(form);
-        new ToDo(
+        new Task(
             formData.get("task-title"),
             formData.get("task-description"),
             formData.get("task-due-date"),
