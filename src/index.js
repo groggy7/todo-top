@@ -9,6 +9,35 @@ import bellIcon from "./assets/bell.svg";
 import collapseIcon from "./assets/collapse.svg";
 import checkedIcon from "./assets/checked.svg";
 
+function Initialize() {
+    if (Project.GetProjectList().length === 0) {
+        new Project('Work');
+        new Project('Personal');
+        new Project('School');
+    }
+
+    if (Task.GetTaskList().length === 0) {
+        const today = new Date();
+        const tomorrow = new Date(today);
+        const nextWeek = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        nextWeek.setDate(nextWeek.getDate() + 7);
+
+        const formatDate = (date) => date.toISOString().split('T')[0];
+
+        new Task('Meeting with client', 'Discuss project requirements', formatDate(tomorrow), 'High', 'Work');
+        new Task('Buy groceries', 'Buy milk, bread, and cheese', formatDate(today), 'Medium', 'Work');
+        new Task('Write code', 'Write code for the project', formatDate(nextWeek), 'Medium', 'Work');
+        new Task('Pickup dry cleaning', 'Pickup dry cleaning at 7am', formatDate(nextWeek), 'Low', 'Personal');
+        new Task('Call mom', 'Call mom and tell her that I love her', formatDate(tomorrow), 'High', 'Personal');
+        new Task('Cook dinner', 'Cook dinner for tomorrow', formatDate(tomorrow), 'Medium', 'Personal');
+        new Task('Study for exam', 'Study for the math exam', formatDate(nextWeek), 'Medium', 'School');
+        new Task('Submit assignment', 'Submit assignment to class', formatDate(tomorrow), 'Low', 'School');
+    }
+}
+
+Initialize();
+
 const sidebar = document.querySelector(".sidebar");
 const main = document.querySelector(".main");
 const viewContent = document.createElement("div");
@@ -218,7 +247,6 @@ function refreshCurrentView() {
     viewHandlers[currentView]();
     document.querySelector(`.${currentView}`).classList.add('active');
 }
-
 
 function loadTasks(tasks) {
     const taskContainer = document.createElement("div");
