@@ -93,7 +93,7 @@ function RenderProjects() {
     projectList.innerHTML = '';
 
     Project.GetProjectList().forEach(project => {
-        const projectItem = createProjectItem({ class: 'project-item', projectIcon: 'fa-folder', text: project.name, id: project.uniqueKey, deleteIcon: 'fa-trash' }); 
+        const projectItem = createProjectItem({ class: 'project-item', projectIcon: 'fa-bars-progress', text: project.name, id: project.uniqueKey, deleteIcon: 'fa-trash' }); 
         projectList.appendChild(projectItem);
     });
 }
