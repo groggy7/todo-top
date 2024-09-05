@@ -16,6 +16,14 @@ export default class Task {
         localStorage.removeItem(uniqueKey);
     }
 
+    static DeleteProjectTasks(projectID) {
+        const taskList = Task.GetTaskList();
+        taskList.forEach(task => {
+            if (task.projectID === projectID) {
+                Task.Delete(task.uniqueKey);
+            }
+        });
+    }
     static Update(uniqueKey, title, description, dueDate, priority, projectID) {
         const taskData = JSON.parse(localStorage.getItem(uniqueKey));
     

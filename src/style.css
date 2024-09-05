@@ -279,6 +279,25 @@ hr {
     gap: 16px;
 }
 
+#add-project-form > input[type="text"] {
+    flex: 1;
+}
+
+.delete-project-icon {
+    display: none;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-left: auto;
+    color: var(--text-color);
+    transition: transform 0.2s ease;
+}
+
+.delete-project-icon:hover {
+    cursor: pointer;
+    color: var(--secondary-color);
+    transform: scale(1.2);
+}
+
 .close-button {
     color: #aaa;
     font-size: 1.5rem;

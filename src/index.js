@@ -41,6 +41,13 @@ const createSidebarItem = ({ class: itemClass, icon, text }) => {
     return item;
 };
 
+const createProjectItem = ({ itemClass, projectIcon, text, id, deleteIcon }) => {
+    const item = document.createElement("div");
+    item.classList.add(itemClass, "project-item", "sidebar-item");
+    item.innerHTML = `<i class="fa-solid ${projectIcon} fa-lg"></i><span>${text}</span><i class="fa-solid ${deleteIcon} fa-lg delete-project-icon" data-id="${id}"></i>`;
+    return item;
+}
+
 sidebarItems.forEach(item => sidebar.appendChild(createSidebarItem(item)));
 
 const projects = document.createElement("div");
@@ -57,7 +64,7 @@ function RenderProjects() {
     projectList.innerHTML = '';
 
     Project.GetProjectList().forEach(project => {
-        const projectItem = createSidebarItem({ class: 'project-item', icon: 'fa-folder', text: project.name });
+        const projectItem = createProjectItem({ class: 'project-item', projectIcon: 'fa-folder', text: project.name, id: project.uniqueKey, deleteIcon: 'fa-trash' }); 
         projectList.appendChild(projectItem);
     });
 }
@@ -192,6 +199,8 @@ sidebar.addEventListener('click', (e) => {
 document.querySelector('.add-task').addEventListener('click', () => {
     addTaskModal.style.display = "block";
     document.querySelector("#add-task-form").reset();
+    const titleField = document.querySelector("#add-task-title");
+    titleField.focus();
 });
 
 document.addEventListener('click', (e) => {
@@ -273,6 +282,9 @@ function loadTasks(tasks) {
         taskContent.addEventListener('click', function() {
             const updateTaskModal = document.querySelector('.update-task-modal');
             updateTaskModal.style.display = 'block';
+
+            const titleField = updateTaskModal.querySelector('input[name="task-title"]');
+            titleField.focus();
 
             const updateTaskForm = document.querySelector('#update-task-form');
             updateTaskForm.reset();
@@ -401,21 +413,41 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const addProjectButton = document.querySelector('.add-project');
+    const submitProjectButton = document.querySelector('.add-project-button');
+    const form = document.querySelector("#add-project-form");
+    
     addProjectButton.addEventListener("click", () => {
         addProjectModal.style.display = 'block';
+        const projectName = document.querySelector("#add-project-name");
+        projectName.focus();
+        form.reset();
+    });
+    
+    submitProjectButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+    
+        const formData = new FormData(form);
+        let projectName = formData.get("project-name");
+        projectName = projectName.charAt(0).toUpperCase() + projectName.slice(1);
+        new Project(projectName);
+        RenderProjects();
+        addProjectModal.style.display = "none";
+    });
 
-        const submitProjectButton = document.querySelector('.add-project-button');
-        submitProjectButton.addEventListener("click", (event) => {
-            event.preventDefault();
-            const form = document.querySelector("#add-project-form");
-            if (!form.checkValidity()) { form.reportValidity(); return; }
-            
-            const formData = new FormData(form);
-            let projectName = formData.get("project-name");
-            projectName = projectName.charAt(0).toUpperCase() + projectName.slice(1);
-            new Project(projectName);
+
+    document.querySelector('.sidebar').addEventListener('click', (event) => {
+        if (event.target.classList.contains('delete-project-icon')) {
+            const projectKey = event.target.getAttribute('data-id');
+            Project.Delete(projectKey);
+            Task.DeleteProjectTasks(projectKey);
             RenderProjects();
-            addProjectModal.style.display = "none";
-        });
+            viewHandlers['today']();
+            const todaySidebarItem = document.querySelector('.sidebar-item.today');
+            todaySidebarItem.classList.add('active');
+        }
     });
 });
