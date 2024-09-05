@@ -86,14 +86,16 @@ body {
     align-items: center;
     justify-content: space-between;
     width: 100%;
+    padding: 0 8px !important;
 }
 
-.project-item {
-    padding-left: 16px;
+.project-list {
     display: flex;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;
+    gap: 8px;
     width: 100%;
+    padding: 0 8px !important;
+    font-size: 0.85rem;
 }
 
 .main {
@@ -109,7 +111,7 @@ body {
     flex-basis: 800px;
 }
 
-.today-container, .this-week-container, .all-tasks-container, .inbox-container {
+.task-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -118,12 +120,12 @@ body {
     padding: 16px;
 }
 
-.today-header {
+.task-header {
     font-size: 1.4rem;
     font-weight: 600;
 }
 
-.today-task-count {
+.task-count {
     color: rgb(32, 32, 32);
     display: flex;
     align-items: center;
@@ -245,7 +247,7 @@ hr {
     transform: scale(0.95);
 }
 
-.add-task-modal, .update-task-modal {
+.add-task-modal, .update-task-modal, .add-project-modal {
     display: none;
     position: fixed;
     z-index: 1000;
@@ -272,11 +274,21 @@ hr {
     width: 100%;
 }
 
+#add-project-form {
+    display: flex;
+    gap: 16px;
+}
+
 .close-button {
     color: #aaa;
     font-size: 1.5rem;
     font-weight: bold;
     align-self: flex-end;
+}
+
+.add-project:hover {
+    cursor: pointer;
+    background-color: var(--hover-color);
 }
 
 .close-button:hover,
@@ -287,7 +299,8 @@ hr {
 }
 
 #add-task-title,
-#update-task-title {
+#update-task-title,
+#add-project-name {
     border: none;
     outline: none;
     font-size: 1.2rem;
