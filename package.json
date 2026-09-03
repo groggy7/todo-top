@@ -12,7 +12,7 @@
   "license": "ISC",
   "devDependencies": {
     "css-loader": "^7.1.2",
-    "css-minimizer-webpack-plugin": "^7.0.0",
+    "css-minimizer-webpack-plugin": "^8.0.0",
     "html-webpack-plugin": "^5.6.0",
     "resolve-url-loader": "^5.0.0",
     "style-loader": "^4.0.0",
@@ -20,11 +20,11 @@
     "terser-webpack-plugin": "^5.3.10",
     "webpack": "^5.94.0",
     "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^5.0.4"
+    "webpack-dev-server": "^6.0.0"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.6.0",
     "flatpickr": "^4.6.13",
-    "uuid": "^10.0.0"
+    "uuid": "^14.0.2"
   }
 }
